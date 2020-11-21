@@ -88,6 +88,14 @@ void GPSRead()
   
   gps.f_get_position(&flat, &flon, &age);
   falt=gps.f_altitude();
+
+  Serial.print("###### AGE ###### ");
+  Serial.println(age);
+  if(age > 2000) {
+    flon = -500.0;
+    flat = -500.0;
+    falt = -100000.0;
+  }
   
   flon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flon, 6;
   flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 6;
@@ -112,21 +120,16 @@ void printdata(){
   Serial.print(F("########## "));
   Serial.print(F("NO. "));
   Serial.print(count);
-  Serial.println(F(" ##########"));
-  if(flon != 1000.000000) {  
-    Serial.println(F("[lon,lat,alt]"));
-    Serial.print(F("["));
-    Serial.print(flon,6);
-    Serial.print(F(","));
-    Serial.print(flat,6);
-    Serial.print(F(","));
-    Serial.print(falt,2);
-    Serial.println(F("]"));
-    count++;
-  }
-  else {
-    Serial.println(F("Failed to get position"));
-  }
+  Serial.println(F(" ##########")); 
+  Serial.println(F("[lon,lat,alt]"));
+  Serial.print(F("["));
+  Serial.print(flon,6);
+  Serial.print(F(","));
+  Serial.print(flat,6);
+  Serial.print(F(","));
+  Serial.print(falt,2);
+  Serial.println(F("]"));
+  count++;
 }
 
 static void smartdelay(unsigned long ms) {
