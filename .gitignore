@@ -3,3 +3,6 @@
 
 # Tabellen
 *.csv
+
+# Json
+*.json
