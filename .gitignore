@@ -1,0 +1,8 @@
+# config files
+*.ini
+
+# Tabellen
+*.csv
+
+# Json
+*.json
