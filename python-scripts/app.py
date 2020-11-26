@@ -1,41 +1,29 @@
-'''
-    # Beschreibung der CSV:
-
-    id int,
-    gateway_id string,
-    timestamp time,
-    frequency double,
-    data_rate string,
-    rssi int, # signalstärke
-    altitude double,
-    lat double,
-    lon double
-'''
-
-
-
+import json
+import pandas as pd
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.express as px
-from math import ceil
 
 from converter import renderGeoData
 
 default_zoom = 14
 default_mapbox_style = 'open-street-map'
-json_file_path = 'Geo.json'
-csv_file_path = 'data2.csv'
+
+csv_file_in = 'data.csv'
+geo_json = 'geo.json'
+csv_file = 'data2.csv'
 
 rssi_min = -120
 rssi_max = 0
+schrittgröße = 20
 
+# aufbereiten der Daten aus csv_file_in in geo_json und csv_file
+middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße)
 
-middle = renderGeoData('data.csv', csv_file_path, rssi_max, rssi_min)
 default_center_lon=middle[0] # '13.737262'
 default_center_lat=middle[1] # '51.050407'
-
 
 mapboxes = {
     0: 'open-street-map',
@@ -47,40 +35,14 @@ mapboxes = {
     6: 'stamen-watercolor'
 }
 
-
-# external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-
 # Initialisierung der app
 app = dash.Dash(__name__) #, external_stylesheets=external_stylesheets)
 
-
-
-
-import json
-with open(json_file_path, "r") as f:
+with open(geo_json, "r") as f:
     geojson = json.load(f)
 
-'''
-# Abfrage der Daten
-from urllib.request import urlopen
-import json
-with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
-    counties = json.load(response)
-
-# df = px.data.election()
-# geojson = px.data.election_geojson()
-'''
-
-
-import pandas as pd # derzeit nur für das Lesen der CSV
-
-# df = pd.read_csv("lukas.csv",
-#    dtype={"fips": str})
-
-
 # init data frame
-df = pd.read_csv(csv_file_path, sep=',', dtype={"id": str})
-
+df = pd.read_csv(csv_file, sep=',', dtype={"id": str})
 
 
 def get_fig(zoom=default_zoom, mapbox_style=default_mapbox_style, center_lat=default_center_lat, center_lon=default_center_lon):
@@ -94,7 +56,7 @@ def get_fig(zoom=default_zoom, mapbox_style=default_mapbox_style, center_lat=def
         labels={'rssi', 'RSSI'},
         title="LoRa Map"
     )
-#	fig.update_geos(fitbounds="locations")
+    # fig.update_geos(fitbounds="locations")
     fig.update_layout(
         autosize=True, showlegend=True,
     margin={"r":0, "t":0, "l":0, "b": 0}
@@ -103,7 +65,7 @@ def get_fig(zoom=default_zoom, mapbox_style=default_mapbox_style, center_lat=def
 
 
 app.layout = html.Div(children=[
-    html.H3("Hello, world!", id="page_header"),
+    html.H3("LoRa Map", id="page_header"),
     dcc.Loading(id='loading', children=[
         dcc.Graph(
             id='map_graph',
@@ -118,7 +80,7 @@ app.layout = html.Div(children=[
                 value=default_zoom
             )]
         ),
-# change to dropdown
+        # change to dropdown
         html.P(
             children=["Map: ", dcc.Slider(
                 id='mapbox_style_slider',
@@ -142,28 +104,21 @@ app.layout = html.Div(children=[
                 )
             ]
         )
-#		,html.Button(children=['set_zoom'], type='submit', id='set_zoom_button')
+        #,html.Button(children=['set_zoom'], type='submit', id='set_zoom_button')
 
     ], id='set_zoom_form')
 ])
 
 # ergänzt Eventhandler
-@app.callback(Output('map_graph', 'figure'),
-    [
-        Input('zoom_slider', 'value'),
-        Input('mapbox_style_slider', 'value'),
-        Input('center_lat_text', 'value'),
-        Input('center_lon_text', 'value')
-    ]
-)
+@app.callback(Output('map_graph', 'figure'),[   Input('zoom_slider', 'value'), Input('mapbox_style_slider', 'value'),
+                                                Input('center_lat_text', 'value'),Input('center_lon_text', 'value')
+                                            ])
 def set_params(zoom, mapbox_style, center_lat_text, center_lon_text):
     return get_fig(zoom, mapbox_style, center_lat_text, center_lon_text)
 
 
 # Starten der App auf einem Webserver
 if __name__ == '__main__':
-    app.run_server(
-        port=8080,
-        debug=True,
-        host='0.0.0.0' # now it's possible to connect outside the localhost
+    app.run_server( port=8080, debug=True,
+                    host='0.0.0.0' # now it's possible to connect outside the localhost
     )

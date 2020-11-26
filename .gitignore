@@ -6,3 +6,6 @@
 
 # Json
 *.json
+
+# Python files
+*.cpython*

@@ -29,10 +29,9 @@ def pol2cart(rho, phi, offsetx, offsety):
     y += offsety
     return(x, y)
 
-def renderGeoData(json_file_path, csv_file_path, rssi_max, rssi_min):
+def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße):
     middle = [0, 0]
     counter = 0
-    schrittgröße = 10
     faktor = (rssi_max-rssi_min)/schrittgröße # in dem Fall: 12
 
     # 3D Array initialisieren
@@ -40,7 +39,7 @@ def renderGeoData(json_file_path, csv_file_path, rssi_max, rssi_min):
         list_of_points.append([])
 
 
-    with open(json_file_path, newline='') as csvfile:
+    with open(csv_file_in, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         next(reader, None) #skip header
         for id, gateway_id, timestamp, frequency, data_rate, rssi, alt, lat, lon in reader:
@@ -69,7 +68,7 @@ def renderGeoData(json_file_path, csv_file_path, rssi_max, rssi_min):
         except:
             pass
 
-    with open(csv_file_path, 'w', newline='') as csvfile:
+    with open(csv_file, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(["id","rssi"])
 
@@ -95,17 +94,20 @@ def renderGeoData(json_file_path, csv_file_path, rssi_max, rssi_min):
             
 
     collection = FeatureCollection(features)
-    with open("Geo.json", "w") as f:
+    with open(geo_json, "w") as f:
         f.write('%s' % collection)
 
     return middle
 
 if __name__ == "__main__":
-    json_file_path = 'data.csv'
-    csv_file_path = 'data2.csv'
+    csv_file_in = 'data.csv'
+    geo_json = 'geo.json'
+    csv_file = 'data2.csv'
 
     rssi_min = -120
     rssi_max = 0
 
-    middle = renderGeoData(json_file_path, csv_file_path, rssi_max, rssi_min)
+    schrittgröße = 10
+
+    middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße)
     print(middle)
