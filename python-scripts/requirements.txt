@@ -1,1 +1,5 @@
 ttn
+geojson                
+dash
+pandas
+plotly

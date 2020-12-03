@@ -1,6 +1,7 @@
 import csv, json
 from geojson import Feature, FeatureCollection, Point, Polygon
 import numpy as np
+import time
 from math import ceil
 
 
@@ -29,23 +30,26 @@ def pol2cart(rho, phi, offsetx, offsety):
     y += offsety
     return(x, y)
 
-def renderGeoData(json_file_path, csv_file_path, rssi_max, rssi_min):
+def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße):
+    """
+        Preprozessing Data that schould be displayed afterwards
+    """
     middle = [0, 0]
     counter = 0
-    schrittgröße = 10
-    faktor = (rssi_max-rssi_min)/schrittgröße # in dem Fall: 12
+    faktor = (rssi_max - rssi_min) / schrittgröße 
 
     # 3D Array initialisieren
     for i in range(0, ceil(faktor)):
         list_of_points.append([])
 
 
-    with open(json_file_path, newline='') as csvfile:
+    with open(csv_file_in, newline='') as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         next(reader, None) #skip header
         for id, gateway_id, timestamp, frequency, data_rate, rssi, alt, lat, lon in reader:
             lat, lon = map(float, (lat, lon))
 
+            # Einordnen in Kategorien
             for i in range(0,ceil(faktor)):
                 if (int(rssi) < -i*schrittgröße and int(rssi) >= -(i+1)*schrittgröße):
                     list_of_points[i].append((lon, lat))
@@ -69,7 +73,7 @@ def renderGeoData(json_file_path, csv_file_path, rssi_max, rssi_min):
         except:
             pass
 
-    with open(csv_file_path, 'w', newline='') as csvfile:
+    with open(csv_file, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(["id","rssi"])
 
@@ -84,7 +88,6 @@ def renderGeoData(json_file_path, csv_file_path, rssi_max, rssi_min):
                                     ]
                                 ),
                             properties = {
-                                'timestamp': -index * schrittgröße,
                                 'rssi': -index * schrittgröße,
                             },
                             id = str(index)
@@ -95,17 +98,24 @@ def renderGeoData(json_file_path, csv_file_path, rssi_max, rssi_min):
             
 
     collection = FeatureCollection(features)
-    with open("Geo.json", "w") as f:
+    with open(geo_json, "w") as f:
         f.write('%s' % collection)
 
     return middle
 
 if __name__ == "__main__":
-    json_file_path = 'data.csv'
-    csv_file_path = 'data2.csv'
+    csv_file_in = 'rawdata.csv'
+    geo_json = 'data.geo.json'
+    csv_file = 'id-rssi.csv'
 
     rssi_min = -120
     rssi_max = 0
 
-    middle = renderGeoData(json_file_path, csv_file_path, rssi_max, rssi_min)
+    schrittgröße = 10
+
+    starttime = time.time()
+    middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße)
+    endtime = time.time()
+
     print(middle)
+    print(f"Total time: {endtime - starttime}")
