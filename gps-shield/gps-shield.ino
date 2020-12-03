@@ -89,7 +89,7 @@ void GPSRead()
   gps.f_get_position(&flat, &flon, &age);
   falt=gps.f_altitude();
 
-  Serial.print("###### AGE ###### ");
+  Serial.print("###### AGE ######");
   Serial.println(age);
   if(age > 2000) {
     flon = -500.0;
