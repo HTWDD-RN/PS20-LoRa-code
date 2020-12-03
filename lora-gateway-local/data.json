@@ -1,0 +1,4 @@
+{"rxpk":[{"tmst":1991512459,"chan":0,"rfch":0,"freq":868.100000,"stat":1,"modu":"LORA","datr":"SF7BW125","codr":"4/5","lsnr":10,"rssi":-25,"size":24,"data":"QNo+ASaAvQAB4misriSdVAsIPLuJlEg+"}]},
+{"rxpk":[{"tmst":1998819841,"chan":0,"rfch":0,"freq":868.100000,"stat":1,"modu":"LORA","datr":"SF7BW125","codr":"4/5","lsnr":9,"rssi":-25,"size":24,"data":"QNo+ASaAvgAB0hzetkIeLy0Dq4pdgHH+"}]},
+{"rxpk":[{"tmst":2005258212,"chan":0,"rfch":0,"freq":868.100000,"stat":1,"modu":"LORA","datr":"SF7BW125","codr":"4/5","lsnr":9,"rssi":-25,"size":24,"data":"QNo+ASaAvwAB25EsvX9G88rtl8r5f+RH"}]},
+{"rxpk":[{"tmst":2012263081,"chan":0,"rfch":0,"freq":868.100000,"stat":1,"modu":"LORA","datr":"SF7BW125","codr":"4/5","lsnr":9,"rssi":-26,"size":24,"data":"QNo+ASaAwAABgxbDfckqsn1dNwR/lk/B"}]},
