@@ -11,9 +11,9 @@ from converter import renderGeoData
 default_zoom = 14
 default_mapbox_style = 'open-street-map'
 
-csv_file_in = 'data.csv'
-geo_json = 'geo.json'
-csv_file = 'data2.csv'
+csv_file_in = 'rawdata.csv'
+geo_json = 'data.geo.json'
+csv_file = 'id-rssi.csv'
 
 rssi_min = -120
 rssi_max = 0
@@ -110,8 +110,10 @@ app.layout = html.Div(children=[
 ])
 
 # ergänzt Eventhandler
-@app.callback(Output('map_graph', 'figure'),[   Input('zoom_slider', 'value'), Input('mapbox_style_slider', 'value'),
-                                                Input('center_lat_text', 'value'),Input('center_lon_text', 'value')
+@app.callback(Output('map_graph', 'figure'),[   Input('zoom_slider', 'value'), 
+                                                Input('mapbox_style_slider', 'value'),
+                                                Input('center_lat_text', 'value'),
+                                                Input('center_lon_text', 'value')
                                             ])
 def set_params(zoom, mapbox_style, center_lat_text, center_lon_text):
     return get_fig(zoom, mapbox_style, center_lat_text, center_lon_text)
@@ -119,6 +121,7 @@ def set_params(zoom, mapbox_style, center_lat_text, center_lon_text):
 
 # Starten der App auf einem Webserver
 if __name__ == '__main__':
-    app.run_server( port=8080, debug=True,
+    app.run_server( port=8080, 
+                    debug=True,
                     host='0.0.0.0' # now it's possible to connect outside the localhost
     )

@@ -1,6 +1,7 @@
 import csv, json
 from geojson import Feature, FeatureCollection, Point, Polygon
 import numpy as np
+import time
 from math import ceil
 
 
@@ -30,9 +31,12 @@ def pol2cart(rho, phi, offsetx, offsety):
     return(x, y)
 
 def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße):
+    """
+        Preprozessing Data that schould be displayed afterwards
+    """
     middle = [0, 0]
     counter = 0
-    faktor = (rssi_max-rssi_min)/schrittgröße # in dem Fall: 12
+    faktor = (rssi_max - rssi_min) / schrittgröße 
 
     # 3D Array initialisieren
     for i in range(0, ceil(faktor)):
@@ -45,6 +49,7 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
         for id, gateway_id, timestamp, frequency, data_rate, rssi, alt, lat, lon in reader:
             lat, lon = map(float, (lat, lon))
 
+            # Einordnen in Kategorien
             for i in range(0,ceil(faktor)):
                 if (int(rssi) < -i*schrittgröße and int(rssi) >= -(i+1)*schrittgröße):
                     list_of_points[i].append((lon, lat))
@@ -83,7 +88,6 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
                                     ]
                                 ),
                             properties = {
-                                'timestamp': -index * schrittgröße,
                                 'rssi': -index * schrittgröße,
                             },
                             id = str(index)
@@ -100,14 +104,18 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
     return middle
 
 if __name__ == "__main__":
-    csv_file_in = 'data.csv'
-    geo_json = 'geo.json'
-    csv_file = 'data2.csv'
+    csv_file_in = 'rawdata.csv'
+    geo_json = 'data.geo.json'
+    csv_file = 'id-rssi.csv'
 
     rssi_min = -120
     rssi_max = 0
 
     schrittgröße = 10
 
+    starttime = time.time()
     middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße)
+    endtime = time.time()
+
     print(middle)
+    print(f"Total time: {endtime - starttime}")
