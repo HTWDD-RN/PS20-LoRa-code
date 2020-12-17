@@ -6,22 +6,23 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.express as px
 
-from converter import renderGeoData
+from converter import renderGeoData, getGatewayIds
 
 default_zoom = 14
 default_mapbox_style = 'open-street-map'
 default_schrittgröße = 10
+default_gatewayId = 'eui-dca632ffff85afc2'
 
-csv_file_in = 'rawdata.csv'
+csv_file_in = 'archive/2020_12_10_data.csv'
 geo_json = 'data.geo.json'
 csv_file = 'id-rssi.csv'
 
 rssi_min = -120
 rssi_max = 0
-schrittgröße = 13
+schrittgröße = 10
 
 # aufbereiten der Daten aus csv_file_in in geo_json und csv_file
-middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, default_schrittgröße)
+middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, default_schrittgröße, default_gatewayId)
 
 default_center_lon=middle[0] # '13.737262'
 default_center_lat=middle[1] # '51.050407'
@@ -113,6 +114,15 @@ app.layout = html.Div(children=[
                     value=default_center_lon
                 )
             ]
+        ),
+        html.P(
+            children=[
+                "Gateway-ID", dcc.Dropdown(
+                    id='gatewayid_dropdown',
+                    options=[{'label': elem, 'value': elem} for elem in getGatewayIds(csv_file_in) ],
+                    value=default_gatewayId
+                )
+            ]
         )
         #,html.Button(children=['set_zoom'], type='submit', id='set_zoom_button')
 
@@ -124,14 +134,15 @@ app.layout = html.Div(children=[
                                                 Input('mapbox_style_slider', 'value'),
                                                 Input('schrittgröße_slider', 'value'),
                                                 Input('center_lat_text', 'value'),
-                                                Input('center_lon_text', 'value')
+                                                Input('center_lon_text', 'value'),
+                                                Input('gatewayid_dropdown', 'value')
                                             ])
-def set_params(zoom, mapbox_style, schrittgröße, center_lat_text, center_lon_text):
+def set_params(zoom, mapbox_style, schrittgröße, center_lat_text, center_lon_text, gatewayid):
     # aufbereiten der Daten aus csv_file_in in geo_json und csv_file
 
     global geojson, default_center_lon, default_center_lat, df
 
-    middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße)
+    middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße, gatewayid)
 
     default_center_lon=middle[0] # '13.737262'
     default_center_lat=middle[1] # '51.050407'
@@ -142,7 +153,7 @@ def set_params(zoom, mapbox_style, schrittgröße, center_lat_text, center_lon_t
     # init data frame
     df = pd.read_csv(csv_file, sep=',', dtype={"id": str})
 
-    return get_fig(zoom, mapbox_style,center_lat_text, center_lon_text)
+    return get_fig(zoom, mapbox_style, center_lat_text, center_lon_text)
 
 
 # Starten der App auf einem Webserver
