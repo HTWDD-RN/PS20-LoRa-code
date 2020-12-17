@@ -10,6 +10,7 @@ from converter import renderGeoData
 
 default_zoom = 14
 default_mapbox_style = 'open-street-map'
+default_schrittgröße = 10
 
 csv_file_in = 'rawdata.csv'
 geo_json = 'data.geo.json'
@@ -20,7 +21,7 @@ rssi_max = 0
 schrittgröße = 13
 
 # aufbereiten der Daten aus csv_file_in in geo_json und csv_file
-middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße)
+middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, default_schrittgröße)
 
 default_center_lon=middle[0] # '13.737262'
 default_center_lat=middle[1] # '51.050407'
@@ -80,7 +81,7 @@ app.layout = html.Div(children=[
                 value=default_zoom
             )]
         ),
-        # change to dropdown
+        # TODO: change to dropdown
         html.P(
             children=["Map: ", dcc.Slider(
                 id='mapbox_style_slider',
@@ -91,13 +92,22 @@ app.layout = html.Div(children=[
             )]
         ),
         html.P(
+            children=["Schrittgröße: ", dcc.Slider(
+                id='schrittgröße_slider',
+                min=1, max=60,
+                marks={str(schrittgröße): str(schrittgröße) for schrittgröße in range(1,60)},
+                step=None,
+                value=default_schrittgröße
+            )]
+        ),
+        html.P(
             children=[
-                "Lat: ", dcc.Input(
+                "Middle Lat: ", dcc.Input(
                     id='center_lat_text',
                     type='text',
                     value=default_center_lat
                 ),
-                "Lon: ", dcc.Input(
+                "Middle Lon: ", dcc.Input(
                     id='center_lon_text',
                     type='text',
                     value=default_center_lon
@@ -112,11 +122,27 @@ app.layout = html.Div(children=[
 # ergänzt Eventhandler
 @app.callback(Output('map_graph', 'figure'),[   Input('zoom_slider', 'value'), 
                                                 Input('mapbox_style_slider', 'value'),
+                                                Input('schrittgröße_slider', 'value'),
                                                 Input('center_lat_text', 'value'),
                                                 Input('center_lon_text', 'value')
                                             ])
-def set_params(zoom, mapbox_style, center_lat_text, center_lon_text):
-    return get_fig(zoom, mapbox_style, center_lat_text, center_lon_text)
+def set_params(zoom, mapbox_style, schrittgröße, center_lat_text, center_lon_text):
+    # aufbereiten der Daten aus csv_file_in in geo_json und csv_file
+
+    global geojson, default_center_lon, default_center_lat, df
+
+    middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße)
+
+    default_center_lon=middle[0] # '13.737262'
+    default_center_lat=middle[1] # '51.050407'
+
+    with open(geo_json, "r") as f:
+        geojson = json.load(f)
+
+    # init data frame
+    df = pd.read_csv(csv_file, sep=',', dtype={"id": str})
+
+    return get_fig(zoom, mapbox_style,center_lat_text, center_lon_text)
 
 
 # Starten der App auf einem Webserver

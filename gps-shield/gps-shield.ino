@@ -31,7 +31,7 @@ static const u4_t DEVADDR = 0x26013EDA;
 
 static osjob_t sendjob;
 
-const unsigned TX_INTERVAL = 1;
+const unsigned TX_INTERVAL = 20;
 
 const lmic_pinmap lmic_pins = {
     .nss = 10,
@@ -179,7 +179,7 @@ void setup() {
   #endif
 
   #if defined(CFG_eu868)
-    LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF7, DR_SF7),  BAND_CENTI);
+    LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF9, DR_SF9),  BAND_CENTI); // Change SF here!
     for(int i = 1; i <= 8; i++) LMIC_disableChannel(i);
   #elif defined(CFG_us915)
     LMIC_selectSubBand(1);
@@ -187,7 +187,7 @@ void setup() {
 
   LMIC_setLinkCheckMode(0);
   LMIC.dn2Dr = DR_SF9;
-  LMIC_setDrTxpow(DR_SF7,14);
+  LMIC_setDrTxpow(DR_SF9,14); // Change SF here!
   
   do_send(&sendjob);
 }
