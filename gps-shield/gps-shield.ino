@@ -155,6 +155,7 @@ void do_send(osjob_t* j){
   }
 }
 
+
 void setup() {
   Serial.begin(9600);
   Serial.println(F("Starting"));
@@ -179,7 +180,7 @@ void setup() {
   #endif
 
   #if defined(CFG_eu868)
-    LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF9, DR_SF9),  BAND_CENTI); // Change SF here!
+    LMIC_setupChannel(0, 868100000, DR_RANGE_MAP(DR_SF12, DR_SF12),  BAND_CENTI); // Change SF here!
     for(int i = 1; i <= 8; i++) LMIC_disableChannel(i);
   #elif defined(CFG_us915)
     LMIC_selectSubBand(1);
@@ -187,7 +188,7 @@ void setup() {
 
   LMIC_setLinkCheckMode(0);
   LMIC.dn2Dr = DR_SF9;
-  LMIC_setDrTxpow(DR_SF9,14); // Change SF here!
+  LMIC_setDrTxpow(DR_SF12,14); // Change SF here!
   
   do_send(&sendjob);
 }
