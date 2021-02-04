@@ -18,8 +18,7 @@ csv_file = 'id-rssi.csv'
 
 rssi_min = -120
 rssi_max = 0
-
-
+schrittgröße = 13
 
 # aufbereiten der Daten aus csv_file_in in geo_json und csv_file
 middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, default_schrittgröße)

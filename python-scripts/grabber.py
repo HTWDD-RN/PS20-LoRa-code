@@ -16,16 +16,17 @@ def uplink_callback(msg, client):
   global id
   with open('data.csv', 'a', newline='') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
-    writer.writerow([ id, msg.metadata.gateways[0].gtw_id,
-                      msg.metadata.time, msg.metadata.frequency,
-                      msg.metadata.data_rate, msg.metadata.gateways[0].rssi,
-                      msg.payload_fields.gps_3.altitude, msg.payload_fields.gps_3.latitude, msg.payload_fields.gps_3.longitude])
-  print(
-    str(id) + "," + msg.metadata.gateways[0].gtw_id + "," +
-    msg.metadata.time + "," + str(msg.metadata.frequency) + "," +
-    msg.metadata.data_rate + "," + str(msg.metadata.gateways[0].rssi) + "," +
-    str(msg.payload_fields.gps_3.altitude) + "," + str(msg.payload_fields.gps_3.latitude) + "," + str(msg.payload_fields.gps_3.longitude)
-  )
+    for gateway in msg.metadata.gateways:
+      writer.writerow([ id, gateway.gtw_id,
+                        msg.metadata.time, msg.metadata.frequency,
+                        msg.metadata.data_rate, gateway.rssi,
+                        msg.payload_fields.gps_3.altitude, msg.payload_fields.gps_3.latitude, msg.payload_fields.gps_3.longitude])
+      print(
+        str(id) + "," + gateway.gtw_id + "," +
+        msg.metadata.time + "," + str(msg.metadata.frequency) + "," +
+        msg.metadata.data_rate + "," + str(gateway.rssi) + "," +
+        str(msg.payload_fields.gps_3.altitude) + "," + str(msg.payload_fields.gps_3.latitude) + "," + str(msg.payload_fields.gps_3.longitude)
+      )
   id += 1
 
 
