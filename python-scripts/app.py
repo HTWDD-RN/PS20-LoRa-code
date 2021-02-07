@@ -61,7 +61,7 @@ def get_fig(zoom=default_zoom, mapbox_style=default_mapbox_style, center_lat=def
         labels={'rssi', 'RSSI'},
         title="LoRa Map"
     )
-    fig.add_trace(px.scatter_mapbox(scatter[scatter['gtw-id'] == default_gatewayId], lat="lat", lon="long", hover_name="gtw-id", hover_data=["rssi"], color_discrete_sequence=["fuchsia"]).data[0])
+    fig.add_trace(px.scatter_mapbox(scatter[scatter['gtw-id'] == default_gatewayId], lat="lat", lon="long", hover_name="gtw-id", hover_data=["rssi"], color='rssi', range_color=(rssi_min,rssi_max), color_continuous_scale="Viridis").data[0])
     # fig.update_geos(fitbounds="locations")
     fig.update_layout(
         autosize=True, showlegend=True,
