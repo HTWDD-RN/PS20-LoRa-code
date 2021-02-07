@@ -1,5 +1,5 @@
 import csv, json
-from geojson import Feature, FeatureCollection, Point, Polygon
+from geojson import Feature, FeatureCollection, Point, Polygon, MultiPoint
 import numpy as np
 import time
 from math import ceil
@@ -96,18 +96,23 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
             index = ceil(faktor) - i - 1
             if (list_of_points[index].__len__() != 0):
                 features.append(
-                        Feature(
-                            geometry = Polygon(
-                                    [
-                                        list_of_points[index]
-                                    ]
-                                ),
-                            properties = {
-                                'rssi': -index * schrittgröße,
-                            },
-                            id = str(index)
-                        )
+                    Feature(
+                        geometry = Polygon(
+                            [list_of_points[index]]),
+                        properties = {
+                            'rssi': -index * schrittgröße,},
+                        id = str(index)
                     )
+                )
+                #features.append(
+                #    Feature(
+                #        geometry = MultiPoint(
+                #            list_of_points[index]),
+                #        properties = {
+                #            'rssi': -index * schrittgröße,},
+                #        id = str(index) + "Multipoint"
+                #    )
+                #)
 
             writer.writerow([str(i),-i * schrittgröße])
             

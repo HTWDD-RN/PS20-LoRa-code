@@ -11,9 +11,10 @@ from converter import renderGeoData, getGatewayIds
 default_zoom = 14
 default_mapbox_style = 'open-street-map'
 default_schrittgröße = 10
-default_gatewayId = 'eui-dca632ffff85afc2'
+# default_gatewayId = 'eui-dca632ffff85afc2'
+default_gatewayId = 'eui-b827ebfffead3656'
 
-csv_file_in = 'archive/2020_12_10_data.csv'
+csv_file_in = 'archive/2021_02_05_data.csv'
 geo_json = 'data.geo.json'
 csv_file = 'id-rssi.csv'
 
@@ -45,6 +46,8 @@ with open(geo_json, "r") as f:
 
 # init data frame
 df = pd.read_csv(csv_file, sep=',', dtype={"id": str})
+scatter = pd.read_csv(csv_file_in)
+# print(scatter[scatter['gtw-id'] == default_gatewayId])
 
 
 def get_fig(zoom=default_zoom, mapbox_style=default_mapbox_style, center_lat=default_center_lat, center_lon=default_center_lon):
@@ -58,6 +61,7 @@ def get_fig(zoom=default_zoom, mapbox_style=default_mapbox_style, center_lat=def
         labels={'rssi', 'RSSI'},
         title="LoRa Map"
     )
+    fig.add_trace(px.scatter_mapbox(scatter[scatter['gtw-id'] == default_gatewayId], lat="lat", lon="long", hover_name="gtw-id", hover_data=["rssi"], color_discrete_sequence=["fuchsia"]).data[0])
     # fig.update_geos(fitbounds="locations")
     fig.update_layout(
         autosize=True, showlegend=True,
@@ -140,12 +144,13 @@ app.layout = html.Div(children=[
 def set_params(zoom, mapbox_style, schrittgröße, center_lat_text, center_lon_text, gatewayid):
     # aufbereiten der Daten aus csv_file_in in geo_json und csv_file
 
-    global geojson, default_center_lon, default_center_lat, df
+    global geojson, default_center_lon, default_center_lat, df, default_gatewayId
 
     middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße, gatewayid)
 
-    default_center_lon=middle[0] # '13.737262'
-    default_center_lat=middle[1] # '51.050407'
+    default_center_lon = middle[0] # '13.737262'
+    default_center_lat = middle[1] # '51.050407'
+    default_gatewayId = gatewayid
 
     with open(geo_json, "r") as f:
         geojson = json.load(f)
