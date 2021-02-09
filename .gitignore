@@ -9,3 +9,6 @@
 
 # Python files
 *.cpython*
+
+# Random Files
+.DS_Store

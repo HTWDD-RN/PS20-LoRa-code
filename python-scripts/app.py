@@ -6,22 +6,24 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.express as px
 
-from converter import renderGeoData
+from converter import renderGeoData, getGatewayIds
 
 default_zoom = 14
 default_mapbox_style = 'open-street-map'
 default_schrittgröße = 10
+# default_gatewayId = 'eui-dca632ffff85afc2'
+default_gatewayId = 'eui-b827ebfffead3656'
 
-csv_file_in = 'rawdata.csv'
+csv_file_in = 'archive/2021_02_05_data.csv'
 geo_json = 'data.geo.json'
 csv_file = 'id-rssi.csv'
 
 rssi_min = -120
 rssi_max = 0
-schrittgröße = 13
+schrittgröße = 10
 
 # aufbereiten der Daten aus csv_file_in in geo_json und csv_file
-middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, default_schrittgröße)
+middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, default_schrittgröße, default_gatewayId)
 
 default_center_lon=middle[0] # '13.737262'
 default_center_lat=middle[1] # '51.050407'
@@ -44,6 +46,8 @@ with open(geo_json, "r") as f:
 
 # init data frame
 df = pd.read_csv(csv_file, sep=',', dtype={"id": str})
+scatter = pd.read_csv(csv_file_in)
+# print(scatter[scatter['gtw-id'] == default_gatewayId])
 
 
 def get_fig(zoom=default_zoom, mapbox_style=default_mapbox_style, center_lat=default_center_lat, center_lon=default_center_lon):
@@ -57,6 +61,7 @@ def get_fig(zoom=default_zoom, mapbox_style=default_mapbox_style, center_lat=def
         labels={'rssi', 'RSSI'},
         title="LoRa Map"
     )
+    fig.add_trace(px.scatter_mapbox(scatter[scatter['gtw-id'] == default_gatewayId], lat="lat", lon="long", hover_name="gtw-id", hover_data=["rssi"], color='rssi', range_color=(rssi_min,rssi_max), color_continuous_scale="Viridis").data[0])
     # fig.update_geos(fitbounds="locations")
     fig.update_layout(
         autosize=True, showlegend=True,
@@ -113,6 +118,15 @@ app.layout = html.Div(children=[
                     value=default_center_lon
                 )
             ]
+        ),
+        html.P(
+            children=[
+                "Gateway-ID", dcc.Dropdown(
+                    id='gatewayid_dropdown',
+                    options=[{'label': elem, 'value': elem} for elem in getGatewayIds(csv_file_in) ],
+                    value=default_gatewayId
+                )
+            ]
         )
         #,html.Button(children=['set_zoom'], type='submit', id='set_zoom_button')
 
@@ -124,17 +138,19 @@ app.layout = html.Div(children=[
                                                 Input('mapbox_style_slider', 'value'),
                                                 Input('schrittgröße_slider', 'value'),
                                                 Input('center_lat_text', 'value'),
-                                                Input('center_lon_text', 'value')
+                                                Input('center_lon_text', 'value'),
+                                                Input('gatewayid_dropdown', 'value')
                                             ])
-def set_params(zoom, mapbox_style, schrittgröße, center_lat_text, center_lon_text):
+def set_params(zoom, mapbox_style, schrittgröße, center_lat_text, center_lon_text, gatewayid):
     # aufbereiten der Daten aus csv_file_in in geo_json und csv_file
 
-    global geojson, default_center_lon, default_center_lat, df
+    global geojson, default_center_lon, default_center_lat, df, default_gatewayId
 
-    middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße)
+    middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße, gatewayid)
 
-    default_center_lon=middle[0] # '13.737262'
-    default_center_lat=middle[1] # '51.050407'
+    default_center_lon = middle[0] # '13.737262'
+    default_center_lat = middle[1] # '51.050407'
+    default_gatewayId = gatewayid
 
     with open(geo_json, "r") as f:
         geojson = json.load(f)
@@ -142,7 +158,7 @@ def set_params(zoom, mapbox_style, schrittgröße, center_lat_text, center_lon_t
     # init data frame
     df = pd.read_csv(csv_file, sep=',', dtype={"id": str})
 
-    return get_fig(zoom, mapbox_style,center_lat_text, center_lon_text)
+    return get_fig(zoom, mapbox_style, center_lat_text, center_lon_text)
 
 
 # Starten der App auf einem Webserver

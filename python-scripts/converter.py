@@ -1,14 +1,8 @@
 import csv, json
-from geojson import Feature, FeatureCollection, Point, Polygon
+from geojson import Feature, FeatureCollection, Point, Polygon, MultiPoint
 import numpy as np
 import time
 from math import ceil
-
-
-features = []
-header = []
-list_of_points = []
-
 
 def cart2pol(x, y, offsetx, offsety):
     """
@@ -30,10 +24,25 @@ def pol2cart(rho, phi, offsetx, offsety):
     y += offsety
     return(x, y)
 
-def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße):
+def getGatewayIds(csv_file_in):
+    gateways = []
+
+    with open(csv_file_in, newline='') as csvfile:
+        reader = csv.reader(csvfile, delimiter=',')
+        next(reader, None) #skip header
+        for id, gateway_id, timestamp, frequency, data_rate, rssi, alt, lat, lon in reader:
+            if gateway_id not in gateways:
+                gateways.append(gateway_id)
+
+    return gateways
+
+def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße, filter = None):
     """
         Preprozessing Data that schould be displayed afterwards
     """
+    features = []
+    header = []
+    list_of_points = []
     middle = [0, 0]
     counter = 0
     faktor = (rssi_max - rssi_min) / schrittgröße 
@@ -47,7 +56,13 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
         reader = csv.reader(csvfile, delimiter=',')
         next(reader, None) #skip header
         for id, gateway_id, timestamp, frequency, data_rate, rssi, alt, lat, lon in reader:
-            lat, lon = map(float, (lat, lon))
+            if (filter == None):
+                lat, lon = map(float, (lat, lon))
+            else:
+                if (filter != None) and (gateway_id in filter):
+                    lat, lon = map(float, (lat, lon))
+                else:
+                    continue
 
             # Einordnen in Kategorien
             for i in range(0,ceil(faktor)):
@@ -81,18 +96,23 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
             index = ceil(faktor) - i - 1
             if (list_of_points[index].__len__() != 0):
                 features.append(
-                        Feature(
-                            geometry = Polygon(
-                                    [
-                                        list_of_points[index]
-                                    ]
-                                ),
-                            properties = {
-                                'rssi': -index * schrittgröße,
-                            },
-                            id = str(index)
-                        )
+                    Feature(
+                        geometry = Polygon(
+                            [list_of_points[index]]),
+                        properties = {
+                            'rssi': -index * schrittgröße,},
+                        id = str(index)
                     )
+                )
+                #features.append(
+                #    Feature(
+                #        geometry = MultiPoint(
+                #            list_of_points[index]),
+                #        properties = {
+                #            'rssi': -index * schrittgröße,},
+                #        id = str(index) + "Multipoint"
+                #    )
+                #)
 
             writer.writerow([str(i),-i * schrittgröße])
             
@@ -104,7 +124,7 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
     return middle
 
 if __name__ == "__main__":
-    csv_file_in = 'rawdata.csv'
+    csv_file_in = './archive/2020_12_10_data.csv'
     geo_json = 'data.geo.json'
     csv_file = 'id-rssi.csv'
 
@@ -114,7 +134,9 @@ if __name__ == "__main__":
     schrittgröße = 10
 
     starttime = time.time()
+    print(getGatewayIds(csv_file_in))
     middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße)
+    #middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße, filter=["DresdenNeustadt", "eui-dca632ffff85afc2"])
     endtime = time.time()
 
     print(middle)
