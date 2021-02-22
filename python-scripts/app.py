@@ -6,7 +6,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.express as px
 
-from converter import renderGeoData, getGatewayIds
+from converter import ReturnRenderGeoDatam, renderGeoData, getGatewayIds
 
 default_zoom = 14
 default_mapbox_style = 'open-street-map'
@@ -23,10 +23,14 @@ rssi_max = 0
 schrittgröße = 10
 
 # aufbereiten der Daten aus csv_file_in in geo_json und csv_file
-middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, default_schrittgröße, default_gatewayId)
 
-default_center_lon=middle[0] # '13.737262'
-default_center_lat=middle[1] # '51.050407'
+ret = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, default_schrittgröße, default_gatewayId)
+
+rssi_min = ret.rssi_min
+rssi_max = ret.rssi_max
+
+default_center_lon=ret.middle[0] # '13.737262'
+default_center_lat=ret.middle[1] # '51.050407'
 
 mapboxes = {
     0: 'open-street-map',
@@ -146,11 +150,14 @@ def set_params(zoom, mapbox_style, schrittgröße, center_lat_text, center_lon_t
 
     global geojson, default_center_lon, default_center_lat, df, default_gatewayId
 
-    middle = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße, gatewayid)
+    ret = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße, gatewayid)
 
-    default_center_lon = middle[0] # '13.737262'
-    default_center_lat = middle[1] # '51.050407'
+    default_center_lon = ret.middle[0] # '13.737262'
+    default_center_lat = ret.middle[1] # '51.050407'
     default_gatewayId = gatewayid
+    
+    rssi_min = ret.rssi_min
+    rssi_max = ret.rssi_max
 
     with open(geo_json, "r") as f:
         geojson = json.load(f)
