@@ -36,6 +36,13 @@ def getGatewayIds(csv_file_in):
 
     return gateways
 
+# class for returning params from returnGeoData()
+class ReturnRenderGeoData:
+    def __init__(self, param_middle, param_rssi_min, param_rssi_max):
+        self.middle = param_middle
+        self.rssi_min = param_rssi_min
+        self.rssi_max = param_rssi_max
+
 def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße, filter = None):
     """
         Preprozessing Data that schould be displayed afterwards
@@ -56,6 +63,10 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
         reader = csv.reader(csvfile, delimiter=',')
         next(reader, None) #skip header
         for id, gateway_id, timestamp, frequency, data_rate, rssi, alt, lat, lon in reader:
+            if (rssi<rssi_min):
+                rssi_min = rssi
+            else:
+                rssi_max = rssi
             if (filter == None):
                 lat, lon = map(float, (lat, lon))
             else:
@@ -121,7 +132,8 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
     with open(geo_json, "w") as f:
         f.write('%s' % collection)
 
-    return middle
+    return ReturnRenderGeoData(middle,rssi_min,rssi_max)
+
 
 if __name__ == "__main__":
     csv_file_in = './archive/2020_12_10_data.csv'
