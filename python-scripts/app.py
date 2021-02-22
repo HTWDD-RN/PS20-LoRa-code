@@ -134,7 +134,7 @@ app.layout = html.Div(children=[
         )
         #,html.Button(children=['set_zoom'], type='submit', id='set_zoom_button')
 
-    ], id='set_zoom_form')
+    ], id='set_zoom_form', style={"height": "100vh"})
 ])
 
 # ergänzt Eventhandler
