@@ -14,7 +14,7 @@ default_schrittgröße = 10
 # default_gatewayId = 'eui-dca632ffff85afc2'
 default_gatewayId = 'eui-b827ebfffead3656'
 
-csv_file_in = 'archive/2021_02_05_data.csv'
+csv_file_in = 'archive/2021_02_22_data_merged.csv'
 geo_json = 'data.geo.json'
 csv_file = 'id-rssi.csv'
 
