@@ -52,7 +52,9 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
     list_of_points = []
     middle = [0, 0]
     counter = 0
-    faktor = (rssi_max - rssi_min) / schrittgröße 
+    faktor = (rssi_max - rssi_min) / schrittgröße
+
+    first = True
 
     # 3D Array initialisieren
     for i in range(0, ceil(faktor)):
@@ -63,10 +65,6 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
         reader = csv.reader(csvfile, delimiter=',')
         next(reader, None) #skip header
         for id, gateway_id, timestamp, frequency, data_rate, rssi, alt, lat, lon in reader:
-            if (rssi<rssi_min):
-                rssi_min = rssi
-            else:
-                rssi_max = rssi
             if (filter == None):
                 lat, lon = map(float, (lat, lon))
             else:
@@ -74,6 +72,12 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
                     lat, lon = map(float, (lat, lon))
                 else:
                     continue
+            if ((int(rssi)<int(rssi_min)) or first):
+                rssi_min = int(rssi)
+            if ((int(rssi)>int(rssi_max)) or first):
+                rssi_max = int(rssi)
+            
+            first = False
 
             # Einordnen in Kategorien
             for i in range(0,ceil(faktor)):
@@ -83,9 +87,17 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
                     middle[1] += lat
                     counter += 1
 
+            # print(f"Rssi Min {rssi_min}")
+            # print(f"Rssi Max {rssi_max}")
+
     # Mittelpunkt Approximieren
-    middle[0] /= counter
-    middle[1] /= counter
+    try:
+        middle[0] /= counter
+        middle[1] /= counter
+    except:
+        print("Devision by Zero")
+        middle[0] = 0
+        middle[1] = 0
 
     # Sortierung + verschiebung
     for i in range(0, ceil(faktor)):
@@ -140,8 +152,8 @@ if __name__ == "__main__":
     geo_json = 'data.geo.json'
     csv_file = 'id-rssi.csv'
 
-    rssi_min = -120
-    rssi_max = 0
+    # rssi_min = -120 # schon in app.py
+    # rssi_max = 0 # schon in app.py
 
     schrittgröße = 10
 
