@@ -6,7 +6,7 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import plotly.express as px
 
-from converter import ReturnRenderGeoDatam, renderGeoData, getGatewayIds
+from converter import ReturnRenderGeoData, renderGeoData, getGatewayIds
 
 default_zoom = 14
 default_mapbox_style = 'open-street-map'
@@ -26,8 +26,8 @@ schrittgröße = 10
 
 ret = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, default_schrittgröße, default_gatewayId)
 
-rssi_min = ret.rssi_min
-rssi_max = ret.rssi_max
+rssi_min = int(ret.rssi_min)
+rssi_max = int(ret.rssi_max)
 
 default_center_lon=ret.middle[0] # '13.737262'
 default_center_lat=ret.middle[1] # '51.050407'
@@ -57,13 +57,14 @@ scatter = pd.read_csv(csv_file_in)
 def get_fig(zoom=default_zoom, mapbox_style=default_mapbox_style, center_lat=default_center_lat, center_lon=default_center_lon):
     fig = px.choropleth_mapbox(df, geojson=geojson, locations='id', color='rssi',
         color_continuous_scale="Viridis",
-        range_color=(rssi_min,rssi_max),
+        range_color=(int(rssi_min),int(rssi_max)),
         zoom=zoom,
         opacity=0.5,
         mapbox_style=mapboxes.get(mapbox_style,'open-street-map'),
         center={'lat':float(center_lat), 'lon':float(center_lon)},
         labels={'rssi', 'RSSI'},
-        title="LoRa Map"
+        title="LoRa Map",
+        height=800
     )
     fig.add_trace(px.scatter_mapbox(scatter[scatter['gtw-id'] == default_gatewayId], lat="lat", lon="long", hover_name="gtw-id", hover_data=["rssi"], color='rssi', range_color=(rssi_min,rssi_max), color_continuous_scale="Viridis").data[0])
     # fig.update_geos(fitbounds="locations")
@@ -134,7 +135,7 @@ app.layout = html.Div(children=[
         )
         #,html.Button(children=['set_zoom'], type='submit', id='set_zoom_button')
 
-    ], id='set_zoom_form', style={"height": "100vh"})
+    ], id='set_zoom_form')
 ])
 
 # ergänzt Eventhandler
@@ -148,16 +149,16 @@ app.layout = html.Div(children=[
 def set_params(zoom, mapbox_style, schrittgröße, center_lat_text, center_lon_text, gatewayid):
     # aufbereiten der Daten aus csv_file_in in geo_json und csv_file
 
-    global geojson, default_center_lon, default_center_lat, df, default_gatewayId
+    global geojson, default_center_lon, default_center_lat, df, default_gatewayId, rssi_min, rssi_max
 
-    ret = renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße, gatewayid)
+    ret = renderGeoData(csv_file_in, geo_json, csv_file, 0, -120, schrittgröße, gatewayid)
 
     default_center_lon = ret.middle[0] # '13.737262'
     default_center_lat = ret.middle[1] # '51.050407'
     default_gatewayId = gatewayid
     
-    rssi_min = ret.rssi_min
-    rssi_max = ret.rssi_max
+    rssi_min = int(ret.rssi_min)
+    rssi_max = int(ret.rssi_max)
 
     with open(geo_json, "r") as f:
         geojson = json.load(f)
