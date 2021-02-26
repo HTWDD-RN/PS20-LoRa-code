@@ -36,6 +36,13 @@ def getGatewayIds(csv_file_in):
 
     return gateways
 
+# class for returning params from returnGeoData()
+class ReturnRenderGeoData:
+    def __init__(self, param_middle, param_rssi_min, param_rssi_max):
+        self.middle = param_middle
+        self.rssi_min = param_rssi_min
+        self.rssi_max = param_rssi_max
+
 def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgröße, filter = None):
     """
         Preprozessing Data that schould be displayed afterwards
@@ -45,7 +52,9 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
     list_of_points = []
     middle = [0, 0]
     counter = 0
-    faktor = (rssi_max - rssi_min) / schrittgröße 
+    faktor = (rssi_max - rssi_min) / schrittgröße
+
+    first = True
 
     # 3D Array initialisieren
     for i in range(0, ceil(faktor)):
@@ -63,6 +72,12 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
                     lat, lon = map(float, (lat, lon))
                 else:
                     continue
+            if ((int(rssi)<int(rssi_min)) or first):
+                rssi_min = int(rssi)
+            if ((int(rssi)>int(rssi_max)) or first):
+                rssi_max = int(rssi)
+            
+            first = False
 
             # Einordnen in Kategorien
             for i in range(0,ceil(faktor)):
@@ -72,9 +87,17 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
                     middle[1] += lat
                     counter += 1
 
+            # print(f"Rssi Min {rssi_min}")
+            # print(f"Rssi Max {rssi_max}")
+
     # Mittelpunkt Approximieren
-    middle[0] /= counter
-    middle[1] /= counter
+    try:
+        middle[0] /= counter
+        middle[1] /= counter
+    except:
+        print("Devision by Zero")
+        middle[0] = 0
+        middle[1] = 0
 
     # Sortierung + verschiebung
     for i in range(0, ceil(faktor)):
@@ -121,15 +144,16 @@ def renderGeoData(csv_file_in, geo_json, csv_file, rssi_max, rssi_min, schrittgr
     with open(geo_json, "w") as f:
         f.write('%s' % collection)
 
-    return middle
+    return ReturnRenderGeoData(middle,rssi_min,rssi_max)
+
 
 if __name__ == "__main__":
     csv_file_in = './archive/2020_12_10_data.csv'
     geo_json = 'data.geo.json'
     csv_file = 'id-rssi.csv'
 
-    rssi_min = -120
-    rssi_max = 0
+    # rssi_min = -120 # schon in app.py
+    # rssi_max = 0 # schon in app.py
 
     schrittgröße = 10
 
