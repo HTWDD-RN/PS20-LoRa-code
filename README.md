@@ -2,6 +2,10 @@
 
 Dieses Repository enthält sämtlichen Code für das LoRa-Projektseminar im WS 2020/21.
 
+Lukas Hirsch <lukas.hirsch@htw-dresden.de> \
+Mauritius Berger <mauritius.berger@htw-dresden.de> \
+Benjamin Hempel <benjamin.hempel@htw-dresden.de>
+
 ## Bestandteile
 
 * `gps-shield`: Enthält den Sketch für die Arduino-basierte Node mit dem GPS Shield.
